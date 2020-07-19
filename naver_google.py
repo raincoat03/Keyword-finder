@@ -1,15 +1,8 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
-from itertools import groupby
-import requests
-import re
 import time
-import lxml
-import pandas as pd
-import numpy as np
 import openpyxl
-from operator import itemgetter
 from datetime import datetime
 start = time.time()
 date = datetime.today()
@@ -48,7 +41,7 @@ keyword_naver_url = "https://manage.searchad.naver.com/customers/1948785/tool/ke
 
 # 목록 수집
 ## 리스트 순회
-for i in [3]: # , 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22
+for i in [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22]:
     time.sleep(2)
     keyword_naver_url = "https://manage.searchad.naver.com/customers/1948785/tool/keyword-planner?keywords="
     driver.get(keyword_naver_url)
@@ -69,7 +62,7 @@ for i in [3]: # , 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 
     driver.find_element_by_xpath(enter_button).click()
     time.sleep(2)
     ## 검색어 추출
-    for j in [4]: # , 5, 6, 7, 8, 9, 10, 11, 12, 13
+    for j in [4, 5, 6, 7, 8, 9, 10, 11, 12, 13]:
         search_name_list, search_pc_list, search_mobile_list = [], [], []
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
@@ -102,7 +95,7 @@ for i in [3]: # , 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 
             sum = int(round(float(search_pc_list[i]),-1))+int(round(float(search_mobile_list[i]),-1))
             temp = [search_name_list[i], sum]
             search_total.append(temp)
-        '''
+
         next_page_1 = "/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-planner/div[2]/div[1]/div[2]/div[3]/elena-table/elena-table-paginator/div/div/nav/ul/li["
         next_page_2 = str(j)
         next_page_3 = "]/a"
@@ -110,7 +103,7 @@ for i in [3]: # , 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 
         time.sleep(1)
         driver.find_element_by_xpath(next_page).click()
         time.sleep(1)
-        '''
+
 search_total.sort(key=lambda x:-x[1])  # 클릭수 높은 순서대로 정렬
 
 # 목록 입력
@@ -158,3 +151,4 @@ for i in range(len(search_total)):
         time.sleep(1)
     sheet.append(naver_total[-1])
     wb.save("keyword.xlsx")
+print(time.time()-start)
