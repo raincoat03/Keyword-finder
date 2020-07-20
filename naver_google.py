@@ -3,6 +3,8 @@ from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import time
 import openpyxl
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 start = time.time()
 date = datetime.today()
@@ -13,6 +15,7 @@ id_naver = "lyrical98"
 password_naver = "dmsgur!23"
 search_total = []
 naver_total = []
+'''
 wb = openpyxl.Workbook()
 wb.save("keyword.xlsx")
 sheet = wb.active
@@ -21,6 +24,23 @@ sheet["B2"] = "M+PC 클릭수"
 sheet["C2"] = "예상 클릭수"
 sheet["D2"] = "입찰가"
 sheet["E2"] = "예상비용"
+'''
+scope = ["https://spreadsheets.google.com/feeds"]
+json_file_name = "C:/Users/june/Desktop/keyword-283912-f4962ab1a42b.json"
+credentials = ServiceAccountCredentials.from_json_keyfile_name(json_file_name, scope)
+gc = gspread.authorize(credentials)
+spreadsheet_url = "https://docs.google.com/spreadsheets/d/1QYB0Qx1NfkIAGUDMdvUkXqmnXKqJnJL5mhI8XeaOh_w/edit?usp=sharing"
+
+# 문서 불러오기
+doc = gc.open_by_url(spreadsheet_url)
+# naver 시트 불러오기
+worksheet = doc.worksheet("naver")
+# sheet header 생성
+worksheet.update_acell("B2", "Keyword")
+worksheet.update_acell("C2", "M+PC 클릭수")
+worksheet.update_acell("D2", "예상 클릭수")
+worksheet.update_acell("E2", "입찰가")
+worksheet.update_acell("F2", "예상비용")
 
 driver.get(url_naver)
 id_xpath = "/html/body/marvel-root/login/div/div/div/div/fieldset/dl/dd[1]/input"
@@ -41,7 +61,7 @@ keyword_naver_url = "https://manage.searchad.naver.com/customers/1948785/tool/ke
 
 # 목록 수집
 ## 리스트 순회
-for i in [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22]:
+for i in [3]: # , 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22
     time.sleep(2)
     keyword_naver_url = "https://manage.searchad.naver.com/customers/1948785/tool/keyword-planner?keywords="
     driver.get(keyword_naver_url)
@@ -62,7 +82,7 @@ for i in [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22]:
     driver.find_element_by_xpath(enter_button).click()
     time.sleep(2)
     ## 검색어 추출
-    for j in [4, 5, 6, 7, 8, 9, 10, 11, 12, 13]:
+    for j in [4]: # , 5, 6, 7, 8, 9, 10, 11, 12, 13
         search_name_list, search_pc_list, search_mobile_list = [], [], []
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
@@ -149,6 +169,5 @@ for i in range(len(search_total)):
             naver_total.append([search_total[i][0],search_total[i][1],j,n,cost_list[0]])
             break
         time.sleep(1)
-    sheet.append(naver_total[-1])
-    wb.save("keyword.xlsx")
+    worksheet.append_row(naver_total[-1])
 print(time.time()-start)
