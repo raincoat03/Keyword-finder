@@ -52,9 +52,13 @@ naver_password_login.send_keys(password_naver)
 naver_login_button_xpath = "/html/body/marvel-root/login/div/div/div/div/fieldset/div/span/button"
 driver.find_element_by_xpath(naver_login_button_xpath).click()
 
-time.sleep(2)
-driver.switch_to.window(driver.window_handles[1])
-driver.close()
+time.sleep(3)
+
+main = driver.window_handles
+for handle in main:
+    if handle != main[0]:
+        driver.switch_to.window(handle)
+        driver.close()
 driver.switch_to.window(driver.window_handles[0])
 naver_class_n = ""
 keyword_naver_url = "https://manage.searchad.naver.com/customers/1948785/tool/keyword-planner?keywords="
@@ -139,7 +143,6 @@ for i in range(len(search_total)):
     driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-planner/div[2]/div[2]/div/div/form/div[2]/button[2]").click()
     time.sleep(2)
     bid_price = driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]/div[1]/div/elena-input-amt/div/input")
-    print(search_total[i][1])
     for j in range(70, 100001, 50):
         n = j
         bid_price.click()
