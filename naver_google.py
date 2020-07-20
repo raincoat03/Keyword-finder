@@ -9,7 +9,12 @@ from datetime import datetime
 start = time.time()
 date = datetime.today()
 
-driver = webdriver.Chrome("C:/Users/june/Desktop/chromedriver.exe")
+chromedriver = "C:/Users/june/Desktop/chromedriver.exe"
+options = webdriver.ChromeOptions()
+options.add_argument('headless')
+options.add_argument('disable-gpu')
+options.add_argument('lang=ko_KR')
+driver = webdriver.Chrome(chromedriver, options = options)
 url_naver = "https://searchad.naver.com/login"
 id_naver = "lyrical98"
 password_naver = "dmsgur!23"
