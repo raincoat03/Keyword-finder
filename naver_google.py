@@ -13,7 +13,9 @@ chromedriver = "C:/Users/june/Desktop/chromedriver.exe"
 options = webdriver.ChromeOptions()
 options.add_argument('headless')
 options.add_argument('disable-gpu')
+options.add_argument('window-size=1920x1080')
 options.add_argument('lang=ko_KR')
+options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
 driver = webdriver.Chrome(chromedriver, options = options)
 url_naver = "https://searchad.naver.com/login"
 id_naver = "lyrical98"
@@ -70,12 +72,12 @@ keyword_naver_url = "https://manage.searchad.naver.com/customers/1948785/tool/ke
 
 # 목록 수집
 ## 리스트 순회
-for i in [3]: # , 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22
-    time.sleep(2)
+for i in [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22]:
+    time.sleep(1)
     keyword_naver_url = "https://manage.searchad.naver.com/customers/1948785/tool/keyword-planner?keywords="
     driver.get(keyword_naver_url)
     naver_class_check_url = "/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-planner/div[2]/div[1]/div[1]/div[2]/div/div/div[2]/div[2]/label"
-    time.sleep(2)
+    time.sleep(1)
     driver.find_element_by_xpath(naver_class_check_url).click()
     enter_button = "/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-planner/div[2]/div[1]/div[1]/div[3]/button"
     time.sleep(2)
@@ -84,14 +86,14 @@ for i in [3]: # , 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 
     naver_class_2 = naver_class_n
     naver_class_3 = "]/div"  # 3 ~ 22
     click_find = naver_class_1 + naver_class_2 + naver_class_3
-    time.sleep(2)
+    time.sleep(1)
     driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-planner/div[2]/div[1]/div[1]/div[2]/div/div/div[2]/div[2]/div/button").click()
     driver.find_element_by_xpath(click_find).click()
-    time.sleep(2)
+    time.sleep(1)
     driver.find_element_by_xpath(enter_button).click()
-    time.sleep(2)
+    time.sleep(1)
     ## 검색어 추출
-    for j in [4]: # , 5, 6, 7, 8, 9, 10, 11, 12, 13
+    for j in [4, 5, 6, 7, 8, 9, 10, 11, 12, 13]:
         search_name_list, search_pc_list, search_mobile_list = [], [], []
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
@@ -149,8 +151,10 @@ for i in range(len(search_total)):
     time.sleep(2)
     bid_price = driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]/div[1]/div/elena-input-amt/div/input")
     for j in range(70, 100001, 50):
+        driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]").click()
+        time.sleep(1)
+        driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]/div[1]/div/elena-input-amt/div/input").send_keys(Keys.ENTER)
         n = j
-        bid_price.click()
         bid_price.clear()
         bid_price.send_keys(j)
         driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]/div[4]/button").click()
@@ -172,7 +176,6 @@ for i in range(len(search_total)):
             k = k.strip()
             k = int(k)
             cost_list.append(k)
-            print(cost_list)
         if j >= search_total[i][1] + 30:
             naver_total.append([search_total[i][0],search_total[i][1],j,n,cost_list[0]])
             break
