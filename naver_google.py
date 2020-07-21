@@ -51,6 +51,8 @@ worksheet.update_acell("C2", "M+PC 클릭수")
 worksheet.update_acell("D2", "예상 클릭수")
 worksheet.update_acell("E2", "입찰가")
 worksheet.update_acell("F2", "예상비용")
+# 수집한 키워드 읽기
+already_keyword_list = worksheet.col_values(2)
 
 driver.get(url_naver)
 id_xpath = "/html/body/marvel-root/login/div/div/div/div/fieldset/dl/dd[1]/input"
@@ -144,50 +146,52 @@ for i in [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22]:
         driver.find_element_by_xpath(next_page).click()
         time.sleep(1)
 
+print("수집완료")
 search_total.sort(key=lambda x:-x[1])  # 클릭수 높은 순서대로 정렬
 
 # 목록 입력
 for i in range(len(search_total)):
-    driver.get(keyword_naver_url)
-    time.sleep(1)
-    keyword_enter_sheet = "/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-planner/div[2]/div[2]/div/div/form/div[1]/textarea"
-    driver.find_element_by_xpath(keyword_enter_sheet).click()
-    keyword_enter = driver.find_element_by_xpath(keyword_enter_sheet)
-    time.sleep(1)
-    keyword_enter.send_keys(search_total[i][0])
-    time.sleep(1)
-    driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-planner/div[2]/div[2]/div/div/form/div[2]/button[2]").click()
-    time.sleep(2)
-    bid_price = driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]/div[1]/div/elena-input-amt/div/input")
-    for j in range(70, 100001, 50):
+    if i not in already_keyword_list:
+        driver.get(keyword_naver_url)
         time.sleep(1)
-        element = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]/div[1]/div/elena-input-amt/div/input")))
-        driver.execute_script("arguments[0].click();", element) # bid_price_empty
-        n = j
-        bid_price.clear()
-        bid_price.send_keys(j)
-        driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]/div[4]/button").click()
+        keyword_enter_sheet = "/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-planner/div[2]/div[2]/div/div/form/div[1]/textarea"
+        driver.find_element_by_xpath(keyword_enter_sheet).click()
+        keyword_enter = driver.find_element_by_xpath(keyword_enter_sheet)
+        time.sleep(1)
+        keyword_enter.send_keys(search_total[i][0])
+        time.sleep(1)
+        driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-planner/div[2]/div[2]/div/div/form/div[2]/button[2]").click()
         time.sleep(2)
-        html = driver.page_source
-        soup = BeautifulSoup(html, 'html.parser')
-        click = soup.select("td.elenaColumn-clicks")
-        cost = soup.select("td.elenaColumn-cost")
-        cost_list = []
-        for j in click:
-            j = j.text.strip()
-            j = j.replace(",", "")
-            j = int(j)
-            expect_click = j
-        for k in cost:
-            k = k.text.strip()
-            k = k.strip("원")
-            k = k.replace(",", "")
-            k = k.strip()
-            k = int(k)
-            cost_list.append(k)
-        if j >= search_total[i][1] + 30:
-            naver_total.append([search_total[i][0],search_total[i][1],j,n,cost_list[0]])
-            break
-        time.sleep(1)
-    worksheet.append_row(naver_total[-1])
+        bid_price = driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]/div[1]/div/elena-input-amt/div/input")
+        for j in range(70, 100001, 50):
+            time.sleep(1)
+            element = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]/div[1]/div/elena-input-amt/div/input")))
+            driver.execute_script("arguments[0].click();", element) # bid_price_empty
+            n = j
+            bid_price.clear()
+            bid_price.send_keys(j)
+            driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]/div[4]/button").click()
+            time.sleep(2)
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            click = soup.select("td.elenaColumn-clicks")
+            cost = soup.select("td.elenaColumn-cost")
+            cost_list = []
+            for j in click:
+                j = j.text.strip()
+                j = j.replace(",", "")
+                j = int(j)
+                expect_click = j
+            for k in cost:
+                k = k.text.strip()
+                k = k.strip("원")
+                k = k.replace(",", "")
+                k = k.strip()
+                k = int(k)
+                cost_list.append(k)
+            if j >= search_total[i][1] + 30:
+                naver_total.append([search_total[i][0],search_total[i][1],j,n,cost_list[0]])
+                break
+            time.sleep(1)
+        worksheet.append_row(naver_total[-1])
 print(time.time()-start)
