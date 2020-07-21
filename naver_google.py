@@ -151,7 +151,7 @@ search_total.sort(key=lambda x:-x[1])  # 클릭수 높은 순서대로 정렬
 
 # 목록 입력
 for i in range(len(search_total)):
-    if i not in already_keyword_list:
+    if search_total[i][0] not in already_keyword_list:
         driver.get(keyword_naver_url)
         time.sleep(1)
         keyword_enter_sheet = "/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-planner/div[2]/div[2]/div/div/form/div[1]/textarea"
