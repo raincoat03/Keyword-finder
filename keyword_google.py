@@ -65,6 +65,7 @@ google = 1
 if google == 1:
     from selenium.webdriver.common.keys import Keys
     from selenium.webdriver.common.action_chains import ActionChains
+    import pynput
     import pyautogui
     driver = webdriver.Chrome(chromedriver, options = options)
     driver.maximize_window()
@@ -109,7 +110,7 @@ if google == 1:
 
     # keyword 입력
     keyword_input = driver.find_element_by_xpath("/html/body/div[2]/root/div/div[1]/div/div/div[3]/awsm-child-content/div[2]/div/kp-root/div/div/view-loader[2]/splash-view/div/div/div[1]/splash-cards/div/div[2]/div[3]/focus-trap/div[2]/div[1]/div/validated-text-input/div/material-input/div[1]/div[1]/div/div[2]/textarea")
-    for i in range(500): # 한 페이지에 500개까지만 가능
+    for i in range(50): # 한 페이지에 500개까지만 가능
         keyword_input.send_keys("["+already_list[i][0]+"]")
         keyword_input.send_keys(Keys.ENTER)
         time.sleep(0.5)
@@ -140,5 +141,45 @@ if google == 1:
     pyautogui.click(x, y)
     time.sleep(10)
 
+    # 키워드 및 비용 데이터 수집
+    time.sleep(2)
+    keyboard = pynput.keyboard.Controller()
+    keyboard_key = pynput.keyboard.Key
+    keyboard.press(keyboard_key.ctrl)
+    keyboard.press(keyboard_key.end)
+    keyboard.release(keyboard_key.ctrl)
+    keyboard.release(keyboard_key.end)
+    time.sleep(2)
+    raw_data_list, keyword_name_list, keyword_price_list, keyword_filter_list = [], [], [], []
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    raw_data = soup.select("div.particle-table-row")
+    for i in raw_data:
+        i = i.text.strip()
+        raw_data_list.append(i)
+    print(raw_data_list)
+    print(len(raw_data_list))
     print("성공")
-   # 키워드 및 비용 데이터 수집
+
+    '''    
+    for i in keyword_name:
+        i = i.text.strip()
+        i = i.replace("[", "")
+        i = i.replace("]", "")
+        keyword_name_list.append(i)
+    print(keyword_name_list)
+
+    keyword_price = soup.find_all("div", class_ = "data-numeric resizable")
+    for j in keyword_price:
+        j = j.text.strip()
+        j = j.replace(",", "")
+        j = j.replace("₩", "")
+        j = int(j)
+        keyword_price_list.append(j)
+    print(keyword_price_list)
+
+    for i in range(len(keyword_name_list)):
+        if keyword_price_list[i] <= 30000:
+            keyword_filter_list.append([keyword_name_list[i], keyword_price_list[i]])
+    print(keyword_filter_list)
+    '''
