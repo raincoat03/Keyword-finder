@@ -91,7 +91,8 @@ chromedriver = main_notebook + "chromedriver.exe"
 
 
 
-for i in range(cnt+1):
+while len(already_search_filter_list) != 0:
+    start = time.time()
     # stackoverflow 로그인 화면
     options = webdriver.ChromeOptions()
     driver = webdriver.Chrome(chromedriver, options=options)
@@ -129,14 +130,14 @@ for i in range(cnt+1):
     keyword_input = driver.find_element_by_xpath("/html/body/div[2]/root/div/div[1]/div/div/div[3]/awsm-child-content/div[2]/div/kp-root/div/div/view-loader[2]/splash-view/div/div/div[1]/splash-cards/div/div[2]/div[3]/focus-trap/div[2]/div[1]/div/validated-text-input/div/material-input/div[1]/div[1]/div/div[2]/textarea")
     already_search_filter_list = []
     for i in range(len(already_keyword_list)):
-        if (already_keyword_list[i] not in filter_list) or (already_keyword_list[i] not in already_search_list):
+        if (already_keyword_list[i] not in filter_list) and (already_keyword_list[i] not in already_search_list):
             already_search_filter_list.append(already_keyword_list[i])
     x = 500
     y = 500
-    for j in range(500): # 한 페이지에 500개까지만 가능
-        keyword_input.send_keys("["+already_search_filter_list[j]+"]")
+    for j in already_search_filter_list[:499]: # 한 페이지에 500개까지만 가능
+        keyword_input.send_keys("["+j+"]")
         keyword_input.send_keys(Keys.ENTER)
-        temp_list.append([already_search_filter_list[j]])
+        temp_list.append([j])
         time.sleep(0.5)
         pyautogui.moveTo(x, y)
         x += 1
@@ -225,25 +226,34 @@ for i in range(cnt+1):
     filter_list = worksheet.col_values(13)
     filter_list = [v for v in filter_list if v]
     driver.quit()
-    time.sleep(20)
+    time.sleep(10)
+    already_search_list = worksheet.col_values(3)
+    already_search_list = [v for v in already_search_list if v]
+    time.sleep(10)
+    # 정렬 후 재입력
+    sort_list = []
+    google_filter_keyword_list = worksheet.col_values(3)
+    google_filter_keyword_list = [v for v in google_filter_keyword_list if v]
+    time.sleep(10)
+    google_filter_price_list = worksheet.col_values(4)
+    google_filter_price_list = [v for v in google_filter_price_list if v]
+    time.sleep(10)
+    for i in range(len(google_filter_keyword_list)):
+        sort_list.append([google_filter_keyword_list[i], google_filter_price_list[i]])
+    sort_list.sort(key=lambda x: x[1])
+    doc.values_update("naver!C1", params={'valueInputOption': 'RAW'}, body={'values': sort_list})
+    time.sleep(10)
+    google_filter_keyword_list = worksheet.col_values(3)
+    google_filter_keyword_list = [v for v in google_filter_keyword_list if v]
+    time.sleep(10)
+    # naver 클릭수 합 넣어주기
+    price_list = []
+    for i in range(len(google_filter_keyword_list)):
+        if google_filter_keyword_list[i] in already_keyword_list:
+            a = already_keyword_list.index(google_filter_keyword_list[i])
+            print(a)
+            price_list.append([already_price_list[a]])
+    doc.values_update("naver!E1", params={'valueInputOption': 'RAW'}, body={'values': price_list})
+    print("이번 회차 완료")
+    print(time.time()-start)
 
-# 정렬 후 재입력
-sort_list = []
-google_filter_keyword_list = worksheet.col_values(3)
-google_filter_keyword_list = [v for v in google_filter_keyword_list if v]
-time.sleep(10)
-google_filter_price_list = worksheet.col_values(4)
-google_filter_price_list = [v for v in google_filter_price_list if v]
-time.sleep(10)
-for i in range(len(google_filter_keyword_list)):
-    sort_list.append([google_filter_price_list[i], google_filter_price_list[i]])
-sort_list.sort(key=lambda x: x[1])
-doc.values_update("naver!C1", params={'valueInputOption': 'RAW'}, body={'values': sort_list})
-time.sleep(10)
-
-# naver 클릭수 합 넣어주기
-price_list = []
-for i in range(len(sort_list)):
-    if sort_list[i] in already_keyword_list:
-        price_list.append(already_price_list[i])
-doc.values_update("naver!E1", params={'valueInputOption': 'RAW'}, body={'values': price_list})
