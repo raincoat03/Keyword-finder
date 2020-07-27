@@ -63,8 +63,8 @@ already_price_list = worksheet.col_values(2)
 already_price_list = [v for v in already_price_list if v]
 already_price_list = list(map(int, already_price_list))
 time.sleep(10)
-already_expect_click_list = worksheet.col_values(3)
-already_expect_click_list_list = [v for v in already_expect_click_list if v]
+already_search_list = worksheet.col_values(3)
+already_search_list = [v for v in already_search_list if v]
 time.sleep(10)
 already_bid_price_list = worksheet.col_values(4)
 already_bid_price_list = [v for v in already_bid_price_list if v]
@@ -129,14 +129,14 @@ for i in range(cnt+1):
     keyword_input = driver.find_element_by_xpath("/html/body/div[2]/root/div/div[1]/div/div/div[3]/awsm-child-content/div[2]/div/kp-root/div/div/view-loader[2]/splash-view/div/div/div[1]/splash-cards/div/div[2]/div[3]/focus-trap/div[2]/div[1]/div/validated-text-input/div/material-input/div[1]/div[1]/div/div[2]/textarea")
     already_search_filter_list = []
     for i in range(len(already_keyword_list)):
-        if already_keyword_list[i] not in filter_list:
+        if (already_keyword_list[i] not in filter_list) or (already_keyword_list[i] not in already_search_list):
             already_search_filter_list.append(already_keyword_list[i])
     x = 500
     y = 500
     for j in range(500): # 한 페이지에 500개까지만 가능
         keyword_input.send_keys("["+already_search_filter_list[j]+"]")
         keyword_input.send_keys(Keys.ENTER)
-        temp_list.append(already_search_filter_list[j])
+        temp_list.append([already_search_filter_list[j]])
         time.sleep(0.5)
         pyautogui.moveTo(x, y)
         x += 1
