@@ -10,11 +10,17 @@ from openpyxl import load_workbook
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+import pynput
+import pyautogui
+
+
 start = time.time()
 date = datetime.today()
 
-chromedriver = "C:/Users/june/Desktop/chromedriver.exe"
-options = webdriver.ChromeOptions()
+desktop = "C:/Users/yang/Desktop"
+main_notebook = "C:/Users/june/Desktop/"
 
 '''
 options.add_argument('headless')
@@ -28,7 +34,7 @@ scope = [
 "https://www.googleapis.com/auth/drive",
 ]
 json_file_name = "keyword-google"
-credentials = ServiceAccountCredentials.from_json_keyfile_name("C:/Users/june/Desktop/keyword-google.json", scope)
+credentials = ServiceAccountCredentials.from_json_keyfile_name(main_notebook + "keyword-google.json", scope)
 gc = gspread.authorize(credentials)
 spreadsheet_url = "https://docs.google.com/spreadsheets/d/1QYB0Qx1NfkIAGUDMdvUkXqmnXKqJnJL5mhI8XeaOh_w/edit#gid=0"
 
@@ -37,11 +43,21 @@ doc = gc.open_by_url(spreadsheet_url)
 
 # 시트 선택하기
 worksheet = doc.get_worksheet(0)
+time.sleep(10)
 
 # google에서 필터링 되지 않은 키워드 가져오기
+filter_list = worksheet.col_values(13)
+filter_list = [v for v in filter_list if v]
 already_list = []
+time.sleep(10)
+
 already_keyword_list = worksheet.col_values(1)
 already_keyword_list = [v for v in already_keyword_list if v]
+already_search_filter_list = []
+for i in range(len(already_keyword_list)):
+    if already_keyword_list[i] not in filter_list:
+        already_search_filter_list.append(already_keyword_list[i])
+already_search_filter_list = [v for v in already_search_filter_list if v]
 time.sleep(10)
 already_price_list = worksheet.col_values(2)
 already_price_list = [v for v in already_price_list if v]
@@ -61,25 +77,25 @@ m = len(already_expect_cost_list)
 for i in range(m, x):
     already_list.append([already_keyword_list[i], already_price_list[i]])
 
-google = 1
-if google == 1:
-    from selenium.webdriver.common.keys import Keys
-    from selenium.webdriver.common.action_chains import ActionChains
-    import pynput
-    import pyautogui
-    driver = webdriver.Chrome(chromedriver, options = options)
-    driver.maximize_window()
-    url_naver = "https://searchad.naver.com/login"
-    id_naver = "lyrical98"
-    password_naver = "dmsgur!23"
-    url_google = "https://ads.google.com/aw/keywordplanner/home?ocid=513665264&euid=412882241&__u=1062527609&uscid=513665264&__c=2375329136&authuser=0"
-    id_google = "jahab0001"
-    password_google = "ehgur112?!"
-    url_stack = "https://stackoverflow.com/users/login?ssrc=head"
-    id_xpath = "/html/body/div[1]/div[1]/div[2]/div/div[2]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div[1]/div/div[1]/div/div[1]/input"
-    password_xpath = "/html/body/div[1]/div[1]/div[2]/div/div[2]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div[1]/div[1]/div/div/div/div/div[1]/div/div[1]/input"
+cnt = len(already_search_filter_list)//500
+url_naver = "https://searchad.naver.com/login"
+id_naver = "lyrical98"
+password_naver = "dmsgur!23"
+url_google = "https://ads.google.com/aw/keywordplanner/home?ocid=513665264&euid=412882241&__u=1062527609&uscid=513665264&__c=2375329136&authuser=0"
+id_google = "jahab0001"
+password_google = "ehgur112?!"
+url_stack = "https://stackoverflow.com/users/login?ssrc=head"
+id_xpath = "/html/body/div[1]/div[1]/div[2]/div/div[2]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div[1]/div/div[1]/div/div[1]/input"
+password_xpath = "/html/body/div[1]/div[1]/div[2]/div/div[2]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div[1]/div[1]/div/div/div/div/div[1]/div/div[1]/input"
+chromedriver = main_notebook + "chromedriver.exe"
 
+
+
+for i in range(cnt+1):
     # stackoverflow 로그인 화면
+    options = webdriver.ChromeOptions()
+    driver = webdriver.Chrome(chromedriver, options=options)
+    driver.maximize_window()
     driver.get(url_stack)
     time.sleep(2)
     element = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[2]/div/div[2]/button[1]")))
@@ -109,11 +125,22 @@ if google == 1:
     time.sleep(1)
 
     # keyword 입력
+    temp_list = []
     keyword_input = driver.find_element_by_xpath("/html/body/div[2]/root/div/div[1]/div/div/div[3]/awsm-child-content/div[2]/div/kp-root/div/div/view-loader[2]/splash-view/div/div/div[1]/splash-cards/div/div[2]/div[3]/focus-trap/div[2]/div[1]/div/validated-text-input/div/material-input/div[1]/div[1]/div/div[2]/textarea")
-    for i in range(50): # 한 페이지에 500개까지만 가능
-        keyword_input.send_keys("["+already_list[i][0]+"]")
+    already_search_filter_list = []
+    for i in range(len(already_keyword_list)):
+        if already_keyword_list[i] not in filter_list:
+            already_search_filter_list.append(already_keyword_list[i])
+    x = 500
+    y = 500
+    for j in range(500): # 한 페이지에 500개까지만 가능
+        keyword_input.send_keys("["+already_search_filter_list[j]+"]")
         keyword_input.send_keys(Keys.ENTER)
+        temp_list.append(already_search_filter_list[j])
         time.sleep(0.5)
+        pyautogui.moveTo(x, y)
+        x += 1
+        y += 1
     time.sleep(2)
     element = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/root/div/div[1]/div/div/div[3]/awsm-child-content/div[2]/div/kp-root/div/div/view-loader[2]/splash-view/div/div/div[1]/splash-cards/div/div[2]/div[3]/focus-trap/div[2]/div[1]/div/div[2]/material-button/material-ripple")))
     driver.execute_script("arguments[0].click();", element) # 시작하기 버튼
@@ -135,11 +162,18 @@ if google == 1:
     pyautogui.moveTo(x, y)
     time.sleep(5)
     pyautogui.click(x, y)
-    time.sleep(10)
+    time.sleep(5)
+    pyautogui.click(x, y-1)
+    time.sleep(5)
+    pyautogui.click(x, y+1)
+    time.sleep(5)
     pyautogui.click(x, y)
-    time.sleep(10)
-    pyautogui.click(x, y)
-    time.sleep(10)
+    time.sleep(5)
+    pyautogui.click(x, y-1)
+    time.sleep(5)
+    pyautogui.click(x, y+1)
+    time.sleep(5)
+
 
     # 키워드 및 비용 데이터 수집
     time.sleep(2)
@@ -147,39 +181,69 @@ if google == 1:
     keyboard_key = pynput.keyboard.Key
     keyboard.press(keyboard_key.ctrl)
     keyboard.press(keyboard_key.end)
-    keyboard.release(keyboard_key.ctrl)
     keyboard.release(keyboard_key.end)
+    keyboard.press(keyboard_key.home)
+    keyboard.release(keyboard_key.home)
+    keyboard.release(keyboard_key.ctrl)
+    for _ in range(50):
+        keyboard.press(keyboard_key.page_down)
+        keyboard.release((keyboard_key.page_down))
+        time.sleep(0.5)
+
     time.sleep(2)
-    raw_data_list, keyword_name_list, keyword_price_list, keyword_filter_list = [], [], [], []
+    raw_data_list, keyword_list, keyword_price_list, keyword_filter_list = [], [], [], []
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
     raw_data = soup.select("div.particle-table-row")
     for i in raw_data:
-        i = i.text.strip()
+        i = i.text.split()
         raw_data_list.append(i)
-    print(raw_data_list)
     print(len(raw_data_list))
-    print("성공")
+    print(raw_data_list)
 
-    '''    
-    for i in keyword_name:
-        i = i.text.strip()
-        i = i.replace("[", "")
-        i = i.replace("]", "")
-        keyword_name_list.append(i)
-    print(keyword_name_list)
+    for i in raw_data_list:
+        name = i[0].replace("[", "").replace("]", "")
+        price = i[5].replace("₩", "").replace(",", "")
+        keyword_list.append([name, int(price)])
 
-    keyword_price = soup.find_all("div", class_ = "data-numeric resizable")
-    for j in keyword_price:
-        j = j.text.strip()
-        j = j.replace(",", "")
-        j = j.replace("₩", "")
-        j = int(j)
-        keyword_price_list.append(j)
-    print(keyword_price_list)
+    for i in range(len(keyword_list)):
+        if keyword_list[i][1] <= 30000:
+            keyword_filter_list.append(keyword_list[i])
 
-    for i in range(len(keyword_name_list)):
-        if keyword_price_list[i] <= 30000:
-            keyword_filter_list.append([keyword_name_list[i], keyword_price_list[i]])
-    print(keyword_filter_list)
-    '''
+    # 추가할 위치
+    location_list = worksheet.col_values(3)
+    time.sleep(10)
+    location_list = [v for v in location_list if v]
+    location = len(location_list)
+    value_for_doc = "naver!" + "C" + str(location + 1)
+    doc.values_update(value_for_doc, params={'valueInputOption': 'RAW'}, body={'values': keyword_filter_list})
+    time.sleep(10)
+    length_for_filter_list = len(filter_list)
+    value_for_filter_list = "naver!" + "M" + str(length_for_filter_list + 1)
+    doc.values_update(value_for_filter_list, params={'valueInputOption': 'RAW'}, body={'values': temp_list})
+    time.sleep(10)
+    filter_list = worksheet.col_values(13)
+    filter_list = [v for v in filter_list if v]
+    driver.quit()
+    time.sleep(20)
+
+# 정렬 후 재입력
+sort_list = []
+google_filter_keyword_list = worksheet.col_values(3)
+google_filter_keyword_list = [v for v in google_filter_keyword_list if v]
+time.sleep(10)
+google_filter_price_list = worksheet.col_values(4)
+google_filter_price_list = [v for v in google_filter_price_list if v]
+time.sleep(10)
+for i in range(len(google_filter_keyword_list)):
+    sort_list.append([google_filter_price_list[i], google_filter_price_list[i]])
+sort_list.sort(key=lambda x: x[1])
+doc.values_update("naver!C1", params={'valueInputOption': 'RAW'}, body={'values': sort_list})
+time.sleep(10)
+
+# naver 클릭수 합 넣어주기
+price_list = []
+for i in range(len(sort_list)):
+    if sort_list[i] in already_keyword_list:
+        price_list.append(already_price_list[i])
+doc.values_update("naver!E1", params={'valueInputOption': 'RAW'}, body={'values': price_list})
