@@ -6,9 +6,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import telepot
-import sys
-import openpyxl
-from openpyxl import load_workbook
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
@@ -78,6 +75,9 @@ try:
     '''
     # 수집한 키워드 읽기
     bot.sendMessage("@navergooglekeyword", "작업 시작")
+    already_total_keyword_list = worksheet.col_values(1)
+    already_total_keyword_list = [v for v in already_total_keyword_list if v]
+    time.sleep(10)
     already_keyword_list = worksheet.col_values(3)
     already_keyword_list = [v for v in already_keyword_list if v]
     time.sleep(10)
@@ -212,7 +212,7 @@ try:
             doc.values_update("naver!A1", params={'valueInputOption': 'RAW'}, body={'values': search_total})
             bot.sendMessage("@navergooglekeyword", "1차 Keyword 수집 완료")
             print("1차 키워드 수집 완료")
-            sys.exit()
+            driver.close()
         elif switch == 1:
             new_keyword = 0
             for i in range(len(search_total)):
@@ -291,6 +291,7 @@ try:
         naver_filter_list = already_keyword_list[:100]
         naver_filter_list = [v for v in naver_filter_list if v]
         cnt_naver_filter_list = len(naver_filter_list)
+        value = 0
         while True:
             complete_expect_click_list = [-1]*len(naver_filter_list)
             complete_cost_click_list = [-1]*len(naver_filter_list)
@@ -320,7 +321,7 @@ try:
             time.sleep(2)
             bid_price = driver.find_element_by_xpath("/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]/div[1]/div/elena-input-amt/div/input")
 
-            for i in range(70, 15001, 50):
+            for i in range(70, 10001, 50):
                 time.sleep(1)
                 element = WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.XPATH, "/html/body/elena-root/elena-wrap/div/div[2]/elena-tool-wrap/div/div/div/div/elena-keyword-estimate/div[3]/div[2]/div/div[1]/div[1]/div/elena-input-amt/div/input")))
                 driver.execute_script("arguments[0].click();", element)
@@ -336,7 +337,6 @@ try:
                 cost = soup.select("td.elenaColumn-cost")
                 expect_click_list = []
                 cost_list = []
-                bid_list = []
 
                 for j in click:
                     j = j.text.strip()
@@ -353,22 +353,21 @@ try:
                     k = int(k)
                     cost_list.append(k)
 
-                for i in range(len(naver_filter_list)):
-                    if expect_click_list[i] >= already_price_list[i] + 30:
-                        temp_expect_click_list[i] = expect_click_list[i]
-                        temp_cost_click_list[i] = cost_list[i]
-                        temp_bid_list[i] = bid
-                        if temp_expect_click_list[i] > 0 and complete_expect_click_list[i] < 0:
-                            complete_expect_click_list[i] = temp_expect_click_list[i]
-                            complete_cost_click_list[i] = temp_cost_click_list[i]
-                            complete_bid_list[i] = temp_bid_list[i]
+                for l in range(len(naver_filter_list)):
+                    idx_already_price = already_total_keyword_list.index(naver_filter_list[l])
+                    if (expect_click_list[l] >= already_price_list[idx_already_price] + 30) and complete_expect_click_list[l] < 0:
+                        complete_expect_click_list[l] = expect_click_list[l]
+                        complete_cost_click_list[l] = cost_list[l]
+                        complete_bid_list[l] = bid
 
             for i in range(len(naver_filter_list)):
-                idx_price = already_keyword_list.index(naver_filter_list[i])
-                naver_total.append([naver_filter_list[i], already_price_list[idx_price], complete_expect_click_list[i], complete_bid_list[i], complete_cost_click_list[i], date])
+                idx_price = already_total_keyword_list.index(naver_filter_list[i])
+                idx_google = already_google_price_list.index(naver_filter_list[i])
+                naver_total.append([naver_filter_list[i], already_google_price_list[idx_google], already_price_list[idx_price], complete_expect_click_list[i], complete_bid_list[i], complete_cost_click_list[i], date])
+                print("naver_total에 추가")
 
             time.sleep(1)
-            value_for_doc = "naver!" + "C" + str(len(naver_filter_list)+1)
+            value_for_doc = "naver!" + "C" + str(value+1)
             doc.values_update(value_for_doc, params={'valueInputOption': 'RAW'}, body={'values': naver_total})
             time.sleep(10)
             print(r, time.time()-start)
@@ -378,6 +377,7 @@ try:
             r += 1
             naver_filter_list = already_keyword_list[cnt_naver_filter_list:cnt_naver_filter_list+100]
             naver_filter_list = [v for v in naver_filter_list if v]
+            value += cnt_naver_filter_list
 
     print("입찰가를 비롯한 정보 수집 완료")
     bot.sendMessage("@navergooglekeyword", "입찰가를 비롯한 정보 수집 완료")
@@ -438,6 +438,7 @@ try:
             bot.sendMessage("@navergooglekeyword", keyword_number + ", " + time_config)
             r += 1
     '''
+
 except:
     print("이번 수행에서 추가한 Keyword의 개수: ", new_keyword_number)
     print("이번 수행에서 검색한 Keyword의 개수: ", r)
