@@ -299,11 +299,11 @@ if switch == 1:
     '''
 
 elif switch == 0:
-    naver_filter_list = already_keyword_list[:100]
+    cnt_naver_filter_list = len(worksheet.col_values(6))
+    naver_filter_list = already_keyword_list[cnt_naver_filter_list+1:cnt_naver_filter_list+100]
     naver_filter_list = [v for v in naver_filter_list if v]
-    cnt_naver_filter_list = len(naver_filter_list)
     value = 0
-    while True:
+    while naver_filter_list:
         complete_expect_click_list = [-1]*len(naver_filter_list)
         complete_cost_click_list = [-1]*len(naver_filter_list)
         complete_bid_list = [-1]*len(naver_filter_list)
@@ -376,8 +376,11 @@ elif switch == 0:
             idx_google = already_keyword_list.index(naver_filter_list[i])
             naver_total.append([naver_filter_list[i], int(already_google_price_list[idx_google]), int(already_total_price_list[idx_price]), complete_expect_click_list[i], complete_bid_list[i], complete_cost_click_list[i], date])
 
+        temp_list = worksheet.col_values(6)
+        time.sleep(10)
+        idx = len(temp_list)
         time.sleep(1)
-        value_for_doc = "naver!" + "C" + str(value+1)
+        value_for_doc = "naver!" + "C" + str(idx+1)
         doc.values_update(value_for_doc, params={'valueInputOption': 'RAW'}, body={'values': naver_total})
         time.sleep(10)
         print(r, time.time()-start)
@@ -385,9 +388,15 @@ elif switch == 0:
         keyword_number = str(r)
         bot.sendMessage("@navergooglekeyword", "반복 횟수는: " + keyword_number + ", 걸린 시간은: " + time_config + ", 검색한 Keyword 갯수는 :" + str(len(naver_filter_list)))
         r += 1
-        naver_filter_list = already_keyword_list[cnt_naver_filter_list:cnt_naver_filter_list+100]
+        value_list = worksheet.col_values(6)
+        time.sleep(10)
+        value = len(value_list)
+        naver_filter_list = []
+        for i in already_keyword_list[value:value+100]:
+            if i not in temp_list:
+                naver_filter_list.append(i)
         naver_filter_list = [v for v in naver_filter_list if v]
-        value += cnt_naver_filter_list
+
 
 if switch == 0:
     print("입찰가를 비롯한 정보 수집 완료")
