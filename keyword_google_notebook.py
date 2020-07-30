@@ -16,11 +16,10 @@ import pynput
 import pyautogui
 import telepot
 
-
 start = time.time()
 date = datetime.today()
 
-desktop = "C:/Users/yang/Desktop"
+desktop = "C:/Users/yang/Desktop/"
 main_notebook = "C:/Users/june/Desktop/"
 
 '''
@@ -83,7 +82,6 @@ m = len(already_expect_cost_list)
 for i in range(m, x):
     already_list.append([already_keyword_list[i], already_price_list[i]])
 
-cnt = len(already_search_filter_list)//500
 url_naver = "https://searchad.naver.com/login"
 id_naver = "lyrical98"
 password_naver = "dmsgur!23"
@@ -98,6 +96,7 @@ bot.sendMessage("@navergooglekeyword", "google keyword 작업 시작")
 num = 1
 keyboard = pynput.keyboard.Controller()
 keyboard_key = pynput.keyboard.Key
+forbidden = "\!@%,*{}<>;"
 
 while len(already_search_filter_list) != 0:
     start = time.time()
@@ -143,13 +142,16 @@ while len(already_search_filter_list) != 0:
     x = 500
     y = 500
     for j in already_search_filter_list[:499]: # 한 페이지에 500개까지만 가능
-        keyword_input.send_keys("["+j+"]")
-        keyword_input.send_keys(Keys.ENTER)
-        temp_list.append([j])
-        time.sleep(0.5)
-        pyautogui.moveTo(x, y)
-        x += 1
-        y += 1
+        if any(sym in j for sym in forbidden):
+            continue
+        else:
+            keyword_input.send_keys("["+j+"]")
+            keyword_input.send_keys(Keys.ENTER)
+            temp_list.append([j])
+            time.sleep(0.5)
+            pyautogui.moveTo(x, y)
+            x += 1
+            y += 1
     time.sleep(2)
     element = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/root/div/div[1]/div/div/div[3]/awsm-child-content/div[2]/div/kp-root/div/div/view-loader[2]/splash-view/div/div/div[1]/splash-cards/div/div[2]/div[3]/focus-trap/div[2]/div[1]/div/div[2]/material-button/material-ripple")))
     driver.execute_script("arguments[0].click();", element) # 시작하기 버튼

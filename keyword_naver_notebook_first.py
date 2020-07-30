@@ -38,10 +38,12 @@ r = 1
 # switch == 0 : google에서 필터링 된 값으로 나머지 정보 찾기
 # switch == 1 and new == 0 : naver keyword 전체 수집
 # switch == 1 and new == 1 : 새로운 naver 키워드와 클릭수 합 가져오기
-switch = 0
+# switch == 2 : 수집하지 않고 다음 작업(google)으로 넘어감
+switch = 2
 new = 0
-new_keyword_number = 0
 
+
+new_keyword_number = 0
 # 텔레그램 설정
 token = "1317706045:AAEC0L92We9IWXzt7jqJuhuN8TpXauondYU"
 host = "1382194943"
@@ -389,6 +391,9 @@ elif switch == 0:
         naver_filter_list = [v for v in naver_filter_list if v]
         value += cnt_naver_filter_list
 
+elif switch == 2:
+    pass
+    bot.sendMessage("@navergooglekeyword", "google keyword 작업으로 넘어갑니다.")
 if switch == 0:
     print("입찰가를 비롯한 정보 수집 완료")
     bot.sendMessage("@navergooglekeyword", "입찰가를 비롯한 정보 수집 완료")

@@ -300,7 +300,7 @@ if switch == 1:
 
 elif switch == 0:
     cnt_naver_filter_list = len(worksheet.col_values(6))
-    naver_filter_list = already_keyword_list[cnt_naver_filter_list+1:cnt_naver_filter_list+100]
+    naver_filter_list = already_keyword_list[cnt_naver_filter_list:cnt_naver_filter_list+100]
     naver_filter_list = [v for v in naver_filter_list if v]
     value = 0
     while naver_filter_list:
